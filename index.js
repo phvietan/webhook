@@ -1,17 +1,21 @@
 const fs = require('fs');
 const http = require('http');
+const { log } = require('@drstrain/drutil');
 
 var id = 0;
 
+const myLog = (msg) => {
+  log(msg, 'log.txt', false);
+}
+
 const craftPayload = (req, data) => {
-  let result = `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n`;
+  myLog(`${req.method} ${req.url} HTTP/${req.httpVersion}\r`);
   for (let i = 0; i < req.rawHeaders.length; i += 2) {
     const key = req.rawHeaders[i];
     const value = req.rawHeaders[i + 1];
-    result += `${key}: ${value}\r\n`;
+    myLog(`${key}: ${value}\r`);
   }
-  result += '\r\n';
-  return result + data;
+  myLog(`\r`);
 }
 
 const requestListener = async function (req, res) {
@@ -20,8 +24,8 @@ const requestListener = async function (req, res) {
     buffers.push(chunk);
   }
   const data = Buffer.concat(buffers).toString();
-  let msg = `================  PAYLOAD ID ${++id}  ================\n${craftPayload(req, data)}`;
-  fs.appendFile('log.txt', msg, () => { });
+  myLog(`================  PAYLOAD ID ${++id}  ================`);
+  craftPayload(req, data);
 
   try {
     if (!req.url.startsWith('/redirect')) throw 'not redirect';
